@@ -47,6 +47,9 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationIcon>Minesweeper.ico</ApplicationIcon>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -136,6 +139,7 @@
     <Content Include="images\question2.JPG" />
     <Content Include="images\square.JPG" />
     <Content Include="images\wrong.JPG" />
+    <Content Include="Minesweeper.ico" />
     <Content Include="Records.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

@@ -36,15 +36,24 @@ namespace Minesweeper
         //*************************************************************
         //Methods
         //*************************************************************
-        public void Draw(Graphics g, MenuState State)
+        public void Draw(Graphics g, MenuState State, int ClientSizeWidth, int ClientSizeHeight)
         {
-            if (State == MenuState.Start)
-                g.DrawImage(GameAssets.MenuStart, 0, 0, 1000, 900);
-            if (State == MenuState.Instructions)
-                g.DrawImage(GameAssets.MenuInstructions, 0, 0, 1000, 900);
-            if (State == MenuState.Records)
-                g.DrawImage(GameAssets.MenuRecords, 0, 0, 1000, 900);
+            // scale fixing
+            float ScaleHeight = (float)(ClientSizeHeight / 900f);
+            float ScaleWidth = (float)(ClientSizeWidth / 1000f);
+            float Scale = Math.Min(ScaleHeight, ScaleWidth);
+            int MenuWidth = (int)(1000 * Scale);
+            int MenuHeight = (int)(900 * Scale);
 
+            int x = (ClientSizeWidth - MenuWidth) / 2;
+            int y = (ClientSizeHeight - MenuHeight) / 2;
+
+            if (State == MenuState.Start)
+                g.DrawImage(GameAssets.MenuStart, x, y, MenuWidth, MenuHeight);
+            if (State == MenuState.Instructions)
+                g.DrawImage(GameAssets.MenuInstructions, x, y, MenuWidth, MenuHeight);
+            if (State == MenuState.Records)
+                g.DrawImage(GameAssets.MenuRecords, x, y, MenuWidth, MenuHeight);
         }
 
         public void LoadRecords()

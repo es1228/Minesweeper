@@ -47,6 +47,7 @@ namespace Minesweeper
         public static readonly Image MenuInstructions = Assets.MenuInstructions;
         public static readonly Image MenuRecords = Assets.MenuRecords;
         public static readonly Image Mine = Assets.Mine;
+        public static readonly Icon Minesweeper = Assets.Minesweeper;
         public static readonly Image Question = Assets.Question;
         public static readonly Image Revealed = Assets.Revealed;
         public static readonly Image FlagWrong = Assets.FlagWrong;

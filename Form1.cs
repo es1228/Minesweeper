@@ -56,6 +56,17 @@ namespace Minesweeper
         public Form1()
         {
             InitializeComponent();
+            this.Icon = GameAssets.Minesweeper;
+
+            // fix scaling
+            if (this.WindowState != FormWindowState.Maximized)
+            {
+                Rectangle ScreenArea = Screen.FromControl(this).WorkingArea;
+                int TargetHeight = Math.Min(900, (int)(ScreenArea.Height * 0.9));
+                int TargetWidth = (int)(TargetHeight * (1000 / 900));
+                this.ClientSize = new Size(TargetWidth, TargetHeight);
+                this.CenterToScreen();
+            }
         }
 
         private void Form1_MouseClick(object sender, MouseEventArgs e)
@@ -65,8 +76,14 @@ namespace Minesweeper
                 return;
 
             // get row and col using relative x and y
-            int Col = (e.X - GridX) / CellSize;
-            int Row = (e.Y - GridY) / CellSize;
+            int RelX = e.X - GridX;
+            int RelY = e.Y - GridY;
+
+            if (RelX < 0 || RelY < 0)
+                return;
+
+            int Col = RelX / CellSize;
+            int Row = RelY / CellSize;
 
             if (Row < 0 || Col < 0 || Row >= Rows || Col >= Cols)
                 return;
@@ -171,11 +188,22 @@ namespace Minesweeper
 
         private void Form1_Paint(object sender, PaintEventArgs e)
         {
+            // scaling fixes
+            e.Graphics.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
+            e.Graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.HighQuality;
+            e.Graphics.PixelOffsetMode = System.Drawing.Drawing2D.PixelOffsetMode.HighQuality;
+
             if (oMineFields != null)
             {
                 // relative x and y
-                GridX = ClientSize.Width / 2 - CellSize * Rows / 2;
-                GridY = ClientSize.Height / 2 - CellSize * Cols / 2;
+                GridX = ClientSize.Width / 2 - CellSize * Cols / 2;
+                GridY = ClientSize.Height / 2 - CellSize * Rows / 2;
+
+                // position and size
+                int CenterX = ClientSize.Width / 2;
+                int TopY = ClientSize.Height / 40;
+                int IconSize = Math.Max(30, ClientSize.Height / 18);
+                int LabelY = TopY + (IconSize / 2) - (lblFlagsRemaining.Height / 2);
 
                 // draw
                 oMineFields.Draw(e.Graphics, GridX, GridY);
@@ -183,24 +211,26 @@ namespace Minesweeper
                 // positioning logic for top bar icons
                 if (AntiMines)
                 {
-                    e.Graphics.DrawImage(GameAssets.FlagsRemaining, 350, 10, 50, 50);
-                    lblFlagsRemaining.Left = 400;
-                    lblFlagsRemaining.Top = 22;
-                    e.Graphics.DrawImage(GameAssets.AntiFlagsRemaining, 450, 10, 50, 50);
-                    lblAntiFlagsRemaining.Left = 500;
-                    lblAntiFlagsRemaining.Top = 22;
-                    e.Graphics.DrawImage(GameAssets.Clock, 550, 10, 50, 50);
-                    lblTime.Left = 600;
-                    lblTime.Top = 22;
+                    int Spacing = IconSize + 60;
+
+                    e.Graphics.DrawImage(GameAssets.FlagsRemaining, CenterX - Spacing - 80, TopY, IconSize, IconSize);
+                    lblFlagsRemaining.Location = new Point(CenterX - Spacing - 35, LabelY);
+
+                    e.Graphics.DrawImage(GameAssets.AntiFlagsRemaining, CenterX - 40, TopY, IconSize, IconSize);
+                    lblAntiFlagsRemaining.Location = new Point(CenterX + 5, LabelY);
+
+                    e.Graphics.DrawImage(GameAssets.Clock, CenterX + Spacing + 10, TopY, IconSize, IconSize);
+                    lblTime.Location = new Point(CenterX + Spacing + 55, LabelY);
                 }
                 else
                 {
-                    e.Graphics.DrawImage(GameAssets.FlagsRemaining, 350, 10, 50, 50);
-                    lblFlagsRemaining.Left = 400;
-                    lblFlagsRemaining.Top = 22;
-                    e.Graphics.DrawImage(GameAssets.Clock, 550, 10, 50, 50);
-                    lblTime.Left = 600;
-                    lblTime.Top = 22;
+                    int Spacing = 100;
+
+                    e.Graphics.DrawImage(GameAssets.FlagsRemaining, CenterX - Spacing, TopY, IconSize, IconSize);
+                    lblFlagsRemaining.Location = new Point(CenterX - Spacing + IconSize + 5, LabelY);
+
+                    e.Graphics.DrawImage(GameAssets.Clock, CenterX + 20, TopY, IconSize, IconSize);
+                    lblTime.Location = new Point(CenterX + 20 + IconSize + 5, LabelY);
                 }
                 
                 // label updates
@@ -211,17 +241,22 @@ namespace Minesweeper
             // menu management
             if (oMenuState == MenuState.Start)
             {
-                oMenu.Draw(e.Graphics, oMenuState);
+                oMenu.Draw(e.Graphics, oMenuState, ClientSize.Width, ClientSize.Height);
                 lblInfo.Text = $"Safe First Click: {SafeClick.ToString()}, Anti Mines: {AntiMines.ToString()}";
             }
             if (oMenuState == MenuState.Instructions)
             {
-                oMenu.Draw(e.Graphics, oMenuState);
+                oMenu.Draw(e.Graphics, oMenuState, ClientSize.Width, ClientSize.Height);
                 lblInfo.Text = "Press ESC To Return To Menu";
             }
             if (oMenuState == MenuState.Records)
             {
-                oMenu.Draw(e.Graphics, oMenuState);
+                // scaling fixes
+                oMenu.Draw(e.Graphics, oMenuState, ClientSize.Width, ClientSize.Height);
+                int RecY = (int)(ClientSize.Height * 0.33);
+                txtRecords.Width = (int)(ClientSize.Width * 0.9);
+                txtRecords.Height = (int)(ClientSize.Height * 0.6);
+                txtRecords.Location = new Point((ClientSize.Width - txtRecords.Width) / 2, RecY);
                 lblInfo.Text = "Press ESC To Return To Menu";
             }
             
@@ -232,7 +267,10 @@ namespace Minesweeper
                     lblInfo.Text = $"Anti (Blue) Flags: {AntiFlags.ToString()}\nPress ESC To Return To Menu\nPress 1 To Toggle Between Red/Blue Flags";
                 else
                     lblInfo.Text = "Press ESC To Return To Menu";
-            }      
+            }
+            // center info label
+            int InfoYOffset = lblInfo.Height + 20;
+            lblInfo.Location = new Point((ClientSize.Width - lblInfo.Width) / 2, ClientSize.Height - InfoYOffset);
         }
 
         private void Form1_KeyDown(object sender, KeyEventArgs e)
@@ -343,25 +381,38 @@ namespace Minesweeper
 
         public void StartGame()
         {
+            // scaling fixes
+            Rectangle ScreenArea = Screen.FromControl(this).WorkingArea;
+
             // specify grid size for difficulty
             if (oDifficulty == Difficulty.Easy)
             {
                 Rows = 10;
                 Cols = 10;
-                CellSize = 64;
             }
             else if (oDifficulty == Difficulty.Medium)
             {
                 Rows = 20;
                 Cols = 20;
-                CellSize = 32;
             }
             else if (oDifficulty == Difficulty.Hard)
             {
                 Rows = 30;
                 Cols = 30;
-                CellSize = 24;
             }
+
+            // scaling fixes
+            CellSize = (ScreenArea.Height - 250) / Rows;
+
+            if (oDifficulty == Difficulty.Easy)
+                CellSize = Math.Min(CellSize, 60);
+            else if (oDifficulty == Difficulty.Medium)
+                CellSize = Math.Min(CellSize, 45);
+            else if (oDifficulty == Difficulty.Hard)
+                CellSize = Math.Min(CellSize, 30);
+
+            if (CellSize < 16)
+                CellSize = 16;
 
             // label updates
             lblInfo.Visible = true;
@@ -384,6 +435,16 @@ namespace Minesweeper
             oGameState = GameState.InProgress;
             oMenuState = MenuState.None;                       
             FirstClick = true;
+
+            // update dimensions
+            if (this.WindowState != FormWindowState.Maximized)
+            {
+                int GridWidth = Cols * CellSize;
+                int GridHeight = Rows * CellSize;
+                this.ClientSize = new Size(GridWidth + 200, GridHeight + 200);
+                this.CenterToScreen();
+            }
+
             this.Refresh();
         }
 
@@ -401,7 +462,17 @@ namespace Minesweeper
             lblTime.Visible = false;
             txtRecords.Visible = false;
             tmrGame.Stop();
-            
+
+            // fix scaling
+            if (this.WindowState != FormWindowState.Maximized)
+            {
+                Rectangle ScreenArea = Screen.FromControl(this).WorkingArea;
+                int TargetHeight = Math.Min(900, (int)(ScreenArea.Height * 0.9));
+                int TargetWidth = (int)(TargetHeight * (1000 / 900));
+                this.ClientSize = new Size(TargetWidth, TargetHeight);
+                this.CenterToScreen();
+            }
+                       
             this.Refresh();
         }
 
@@ -455,6 +526,12 @@ namespace Minesweeper
             oMenu.LoadRecords();
             txtRecords.Text = oMenu.Text;
             txtRecords.Visible = true;           
+            this.Refresh();
+        }
+
+        // check if resized
+        private void Form1_Resize(object sender, EventArgs e)
+        {
             this.Refresh();
         }
     }
