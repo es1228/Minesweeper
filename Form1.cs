@@ -242,7 +242,21 @@ namespace Minesweeper
             if (oMenuState == MenuState.Start)
             {
                 oMenu.Draw(e.Graphics, oMenuState, ClientSize.Width, ClientSize.Height);
-                lblInfo.Text = $"Safe First Click: {SafeClick.ToString()}, Anti Mines: {AntiMines.ToString()}";
+
+                // format bool values
+                string SafeClickText;
+                if (SafeClick)
+                    SafeClickText = "On";
+                else
+                    SafeClickText = "Off";
+
+                string AntiMinesText;
+                if (AntiMines)
+                    AntiMinesText = "On";
+                else
+                    AntiMinesText = "Off";
+
+                lblInfo.Text = $"Safe First Click: {SafeClickText}, Anti Mines: {AntiMinesText}";
             }
             if (oMenuState == MenuState.Instructions)
             {
@@ -264,7 +278,16 @@ namespace Minesweeper
             if (oGameState == GameState.InProgress)
             {
                 if (AntiMines)
-                    lblInfo.Text = $"Anti (Blue) Flags: {AntiFlags.ToString()}\nPress ESC To Return To Menu\nPress 1 To Toggle Between Red/Blue Flags";
+                {
+                    // format bool values
+                    string AntiFlagsText;
+                    if (AntiFlags)
+                        AntiFlagsText = "Enabled";
+                    else
+                        AntiFlagsText = "Disabled";
+
+                    lblInfo.Text = $"Anti (Blue) Flags: {AntiFlagsText}\nPress ESC To Return To Menu\nPress 1 To Switch Between Red/Blue Flags";
+                }
                 else
                     lblInfo.Text = "Press ESC To Return To Menu";
             }
